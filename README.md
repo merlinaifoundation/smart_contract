@@ -1,47 +1,47 @@
 # Merlin Token (MRN) - Deployment Guide
 
-Este repositorio contiene el contrato inteligente para el token MRN de Merlin, un token ERC20 basado en mérito que recompensa las contribuciones de valor al ecosistema.
+This repository contains the smart contract for the Merlin Token (MRN), an ERC20 merit-based token that rewards valuable contributions to the ecosystem.
 
-## Requisitos previos
+## Prerequisites
 
-- [Node.js](https://nodejs.org/) (v14 o superior)
-- [npm](https://www.npmjs.com/) (viene con Node.js)
-- Wallet compatible con Ethereum (como [MetaMask](https://metamask.io/))
-- ETH para pagar las tarifas de gas (o tokens nativos si usas una red alternativa)
+- [Node.js](https://nodejs.org/) (v14 or higher)
+- [npm](https://www.npmjs.com/) (comes with Node.js)
+- Ethereum-compatible wallet (like [MetaMask](https://metamask.io/))
+- ETH to pay for gas fees (or native tokens if using an alternative network)
 
-## Instalación
+## Installation
 
-1. Clona este repositorio:
+1. Clone this repository:
 ```bash
-git clone <url-del-repositorio>
+git clone <repository-url>
 cd crypto
 ```
 
-2. Instala las dependencias:
+2. Install dependencies:
 ```bash
 npm init -y
 npm install hardhat @openzeppelin/contracts @nomiclabs/hardhat-ethers ethers dotenv
 ```
 
-3. Inicializa el proyecto Hardhat:
+3. Initialize Hardhat project:
 ```bash
 npx hardhat init
 ```
-Selecciona "Create a JavaScript project" cuando se te pregunte.
+Select "Create a JavaScript project" when prompted.
 
-4. Configura las variables de entorno:
-   - Crea un archivo `.env` en la raíz del proyecto
-   - Añade tu clave privada y URL de API (como Infura o Alchemy):
+4. Configure environment variables:
+   - Create a `.env` file in the project root
+   - Add your private key and API URL (like Infura or Alchemy):
 ```
-PRIVATE_KEY=tu_clave_privada_aqui_sin_0x
-ALCHEMY_API_KEY=tu_api_key_de_alchemy
-INFURA_API_KEY=tu_api_key_de_infura
+PRIVATE_KEY=your_private_key_here_without_0x
+ALCHEMY_API_KEY=your_alchemy_api_key
+INFURA_API_KEY=your_infura_api_key
 ```
-⚠️ NUNCA compartas tu clave privada ni la subas a repositorios públicos.
+⚠️ NEVER share your private key or upload it to public repositories.
 
-## Estructura de archivos
+## File Structure
 
-Después de la inicialización, tu directorio debe tener esta estructura:
+After initialization, your directory should have this structure:
 
 ```
 crypto/
@@ -55,9 +55,9 @@ crypto/
 └── README.md
 ```
 
-## Configuración
+## Configuration
 
-1. Modifica `hardhat.config.js` para incluir las redes donde desplegarás:
+1. Modify `hardhat.config.js` to include the networks where you'll deploy:
 
 ```javascript
 require("@nomiclabs/hardhat-ethers");
@@ -69,22 +69,22 @@ const ALCHEMY_API_KEY = process.env.ALCHEMY_API_KEY;
 module.exports = {
   solidity: "0.8.20",
   networks: {
-    // Red principal de Ethereum (costosa)
+    // Ethereum mainnet (expensive)
     mainnet: {
       url: `https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`,
       accounts: [`0x${PRIVATE_KEY}`]
     },
-    // Red de prueba Goerli (para testear, ETH gratis)
+    // Goerli testnet (for testing, free ETH)
     goerli: {
       url: `https://eth-goerli.g.alchemy.com/v2/${ALCHEMY_API_KEY}`,
       accounts: [`0x${PRIVATE_KEY}`]
     },
-    // Polygon (mucho más económico que Ethereum)
+    // Polygon (much cheaper than Ethereum)
     polygon: {
       url: `https://polygon-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`,
       accounts: [`0x${PRIVATE_KEY}`]
     },
-    // Mumbai (testnet de Polygon, para pruebas)
+    // Mumbai (Polygon testnet, for testing)
     mumbai: {
       url: `https://polygon-mumbai.g.alchemy.com/v2/${ALCHEMY_API_KEY}`,
       accounts: [`0x${PRIVATE_KEY}`]
@@ -93,25 +93,25 @@ module.exports = {
 };
 ```
 
-2. Crea un script de despliegue en `scripts/deploy.js`:
+2. Create a deployment script in `scripts/deploy.js`:
 
 ```javascript
 const hre = require("hardhat");
 
 async function main() {
-  // Obtén la dirección del desplegador (será el propietario inicial)
+  // Get the deployer's address (will be the initial owner)
   const [deployer] = await ethers.getSigners();
-  console.log("Desplegando contratos con la cuenta:", deployer.address);
-  console.log("Saldo de la cuenta:", (await deployer.getBalance()).toString());
+  console.log("Deploying contracts with the account:", deployer.address);
+  console.log("Account balance:", (await deployer.getBalance()).toString());
 
-  // Despliega el contrato
+  // Deploy the contract
   const MerlinToken = await hre.ethers.getContractFactory("MerlinToken");
   const merlinToken = await MerlinToken.deploy(deployer.address);
 
   await merlinToken.deployed();
 
-  console.log("MerlinToken desplegado en:", merlinToken.address);
-  console.log("Propietario:", await merlinToken.owner());
+  console.log("MerlinToken deployed to:", merlinToken.address);
+  console.log("Owner:", await merlinToken.owner());
 }
 
 main()
@@ -122,62 +122,62 @@ main()
   });
 ```
 
-## Despliegue
+## Deployment
 
-### Pruebas en Red de Prueba (Recomendado)
+### Testing on Testnet (Recommended)
 
-Antes de gastar ETH real, prueba en una red de prueba:
+Before spending real ETH, test on a testnet:
 
-1. Obtén tokens ETH de prueba:
-   - Para Goerli: https://goerlifaucet.com/
-   - Para Mumbai: https://mumbaifaucet.com/
+1. Get test ETH tokens:
+   - For Goerli: https://goerlifaucet.com/
+   - For Mumbai: https://mumbaifaucet.com/
 
-2. Despliega en la red de prueba:
+2. Deploy to the testnet:
 ```bash
 npx hardhat run scripts/deploy.js --network goerli
 ```
 
-### Despliegue en Mainnet
+### Mainnet Deployment
 
-Una vez que hayas probado todo y estés listo para el lanzamiento real:
+Once you've tested everything and are ready for the real launch:
 
 ```bash
 npx hardhat run scripts/deploy.js --network mainnet
 ```
 
-⚠️ Esto requerirá ETH real para pagar el gas (aproximadamente $20-50 USD).
+⚠️ This will require real ETH to pay for gas (approximately $20-50 USD).
 
-### Alternativa económica: Despliegue en Polygon
+### Cost-Effective Alternative: Deploy on Polygon
 
-Para ahorrar en costos de gas:
+To save on gas costs:
 
 ```bash
 npx hardhat run scripts/deploy.js --network polygon
 ```
 
-## Interactuar con el contrato
+## Interacting with the Contract
 
-Después del despliegue, puedes interactuar con tu contrato:
+After deployment, you can interact with your contract:
 
-### Crear tokens (mint)
+### Minting Tokens
 
 ```javascript
 // scripts/mint.js
 const hre = require("hardhat");
 
 async function main() {
-  const tokenAddress = "DIRECCIÓN_DE_TU_CONTRATO_AQUÍ";
-  const recipientAddress = "DIRECCIÓN_DEL_DESTINATARIO_AQUÍ";
+  const tokenAddress = "YOUR_CONTRACT_ADDRESS_HERE";
+  const recipientAddress = "RECIPIENT_ADDRESS_HERE";
   const amount = ethers.utils.parseEther("1000"); // 1000 tokens
 
   const MerlinToken = await hre.ethers.getContractFactory("MerlinToken");
   const merlinToken = await MerlinToken.attach(tokenAddress);
 
   // Minting tokens
-  console.log("Minteo de tokens en progreso...");
+  console.log("Minting tokens in progress...");
   const tx = await merlinToken.mint(recipientAddress, amount);
   await tx.wait();
-  console.log("Tokens minteados exitosamente!");
+  console.log("Tokens minted successfully!");
 }
 
 main()
@@ -188,27 +188,27 @@ main()
   });
 ```
 
-Ejecutar:
+Run:
 ```bash
 npx hardhat run scripts/mint.js --network mainnet
 ```
 
-### Habilitar transferencias
+### Enable Transfers
 
 ```javascript
 // scripts/enableTransfers.js
 const hre = require("hardhat");
 
 async function main() {
-  const tokenAddress = "DIRECCIÓN_DE_TU_CONTRATO_AQUÍ";
+  const tokenAddress = "YOUR_CONTRACT_ADDRESS_HERE";
 
   const MerlinToken = await hre.ethers.getContractFactory("MerlinToken");
   const merlinToken = await MerlinToken.attach(tokenAddress);
 
-  console.log("Habilitando transferencias...");
+  console.log("Enabling transfers...");
   const tx = await merlinToken.enableTransfers();
   await tx.wait();
-  console.log("Transferencias habilitadas exitosamente!");
+  console.log("Transfers enabled successfully!");
 }
 
 main()
@@ -219,28 +219,28 @@ main()
   });
 ```
 
-Ejecutar:
+Run:
 ```bash
 npx hardhat run scripts/enableTransfers.js --network mainnet
 ```
 
-### Configurar dirección de recuperación
+### Configure Recovery Address
 
 ```javascript
 // scripts/setupRecovery.js
 const hre = require("hardhat");
 
 async function main() {
-  const tokenAddress = "DIRECCIÓN_DE_TU_CONTRATO_AQUÍ";
-  const recoveryAddress = "DIRECCIÓN_DE_RECUPERACIÓN_AQUÍ";
+  const tokenAddress = "YOUR_CONTRACT_ADDRESS_HERE";
+  const recoveryAddress = "RECOVERY_ADDRESS_HERE";
 
   const MerlinToken = await hre.ethers.getContractFactory("MerlinToken");
   const merlinToken = await MerlinToken.attach(tokenAddress);
 
-  console.log("Configurando dirección de recuperación...");
+  console.log("Configuring recovery address...");
   const tx = await merlinToken.setupRecoveryAddress(recoveryAddress);
   await tx.wait();
-  console.log("Dirección de recuperación configurada exitosamente!");
+  console.log("Recovery address configured successfully!");
 }
 
 main()
@@ -251,98 +251,98 @@ main()
   });
 ```
 
-Ejecutar:
+Run:
 ```bash
 npx hardhat run scripts/setupRecovery.js --network mainnet
 ```
 
-## Verificación del contrato
+## Contract Verification
 
-Para que los usuarios puedan ver y verificar el código del contrato en Etherscan:
+To allow users to view and verify the contract code on Etherscan:
 
-1. Instala el plugin:
+1. Install the plugin:
 ```bash
 npm install @nomiclabs/hardhat-etherscan
 ```
 
-2. Agrega a `hardhat.config.js`:
+2. Add to `hardhat.config.js`:
 ```javascript
 require("@nomiclabs/hardhat-etherscan");
 
-// Añade esto a la configuración
+// Add this to the configuration
 etherscan: {
   apiKey: process.env.ETHERSCAN_API_KEY
 }
 ```
 
-3. Verifica el contrato:
+3. Verify the contract:
 ```bash
-npx hardhat verify --network mainnet DIRECCIÓN_DEL_CONTRATO DIRECCIÓN_DEL_PROPIETARIO
+npx hardhat verify --network mainnet CONTRACT_ADDRESS OWNER_ADDRESS
 ```
 
-## Listado en Uniswap
+## Listing on Uniswap
 
-Después de desplegar tu token MRN y haber minteado una cantidad inicial, puedes listarlo en Uniswap para permitir el intercambio entre MRN y otras criptomonedas.
+After deploying your MRN token and minting an initial amount, you can list it on Uniswap to allow trading between MRN and other cryptocurrencies.
 
-### Requisitos previos para listar en Uniswap
+### Prerequisites for Uniswap Listing
 
-1. Token MRN desplegado y verificado
-2. Transferencias habilitadas (`enableTransfers()`)
-3. Una cantidad de tokens MRN para crear el pool de liquidez
-4. ETH (o el token nativo de la red que uses) para emparejar con MRN
-5. ETH adicional para pagar tarifas de gas
+1. MRN token deployed and verified
+2. Transfers enabled (`enableTransfers()`)
+3. An amount of MRN tokens to create the liquidity pool
+4. ETH (or the native token of the network you're using) to pair with MRN
+5. Additional ETH for gas fees
 
-### Proceso para listar en Uniswap V3
+### Process for Listing on Uniswap V3
 
-1. **Preparación para crear el pool:**
-   - Mint una cantidad adecuada de tokens MRN a tu dirección (al menos unos miles)
-   - Asegúrate de tener suficiente ETH para emparejar (valor similar al de los tokens MRN)
-   - Las transferencias deben estar habilitadas
+1. **Preparation for creating the pool:**
+   - Mint an appropriate amount of MRN tokens to your address (at least a few thousand)
+   - Ensure you have enough ETH to pair (similar value to MRN tokens)
+   - Transfers must be enabled
 
-2. **Crear el pool de liquidez:**
+2. **Create the liquidity pool:**
    
-   a. Visita [Uniswap](https://app.uniswap.org/#/pool) y conecta tu wallet
+   a. Visit [Uniswap](https://app.uniswap.org/#/pool) and connect your wallet
    
-   b. Haz clic en "New Position"
+   b. Click on "New Position"
    
-   c. Si tu token no aparece automáticamente, ingresa la dirección del contrato MRN
+   c. If your token doesn't appear automatically, enter the MRN contract address
    
-   d. Selecciona ETH (o WETH) como el otro token del par
+   d. Select ETH (or WETH) as the other token in the pair
    
-   e. Elige rango de precios:
-      - Para V3: selecciona un rango de precios para concentrar liquidez
-      - Recomendación: comienza con un rango amplio para tokens nuevos
+   e. Choose price range:
+      - For V3: select a price range to concentrate liquidity
+      - Recommendation: start with a wide range for new tokens
    
-   f. Ingresa las cantidades que deseas añadir como liquidez inicial:
-      - Se recomienda un valor mínimo de $1,000-5,000 USD en equivalente
-      - Esto es crucial para crear un mercado inicial viable
+   f. Enter the amounts you want to add as initial liquidity:
+      - Minimum recommended value is $1,000-5,000 USD equivalent
+      - This is crucial for creating a viable initial market
 
-   g. Confirma la transacción y paga el gas
+   g. Confirm the transaction and pay the gas
 
-3. **Verificar que el pool está activo:**
-   - Comprueba que tu pool aparece en "Your Positions"
-   - Verifica que el token aparece en la interfaz de intercambio de Uniswap
+3. **Verify that the pool is active:**
+   - Check that your pool appears in "Your Positions"
+   - Verify that the token appears in the Uniswap exchange interface
 
-### Script para aprobar Uniswap para usar tus tokens
+### Script to Approve Uniswap to Use Your Tokens
 
 ```javascript
 // scripts/approveUniswap.js
 const hre = require("hardhat");
 
 async function main() {
-  const tokenAddress = "DIRECCIÓN_DE_TU_CONTRATO_AQUÍ";
-  // Router de Uniswap V3
+  const tokenAddress = "YOUR_CONTRACT_ADDRESS_HERE";
+  // Uniswap V3 Router
   const uniswapRouterAddress = "0xE592427A0AEce92De3Edee1F18E0157C05861564";
-  // Aprobación máxima (ajusta según necesidades)
+  // Maximum approval (adjust as needed)
   const maxApproval = ethers.constants.MaxUint256;
   
   const MerlinToken = await hre.ethers.getContractFactory("MerlinToken");
   const merlinToken = await MerlinToken.attach(tokenAddress);
 
-  console.log("Aprobando Uniswap para usar tus tokens MRN...");
+  console.log("Approving Uniswap to use your MRN tokens...");
   const tx = await merlinToken.approve(uniswapRouterAddress, maxApproval);
   await tx.wait();
-  console.log("Aprobación exitosa! Ahora puedes crear un pool en Uniswap.");
+  console.log("Approval successful! You can now create a pool on Uniswap.");
 }
 
 main()
@@ -353,48 +353,48 @@ main()
   });
 ```
 
-Ejecutar:
+Run:
 ```bash
 npx hardhat run scripts/approveUniswap.js --network mainnet
 ```
 
-### Alternativa: Listar en Uniswap en Polygon
+### Alternative: Listing on Uniswap on Polygon
 
-Para costos mucho más bajos, puedes crear un pool en Uniswap en la red Polygon:
+For much lower costs, you can create a pool on Uniswap on the Polygon network:
 
-1. Despliega tu token en Polygon
-2. Sigue los mismos pasos anteriores, pero conectándote a Polygon en tu wallet
-3. Usa MATIC en lugar de ETH para crear el pool
+1. Deploy your token on Polygon
+2. Follow the same steps above, but connect to Polygon in your wallet
+3. Use MATIC instead of ETH to create the pool
 
-### Después de crear liquidez
+### After Creating Liquidity
 
-1. **Compartir la dirección del pool:**
-   - Comparte la URL de tu pool en redes sociales y comunidades
-   - Ejemplo: `https://app.uniswap.org/#/pool/ID_DEL_POOL`
+1. **Share the pool address:**
+   - Share your pool URL on social media and communities
+   - Example: `https://app.uniswap.org/#/pool/POOL_ID`
 
-2. **Monitorear y mantener liquidez:**
-   - Vigila el pool para asegurarte que siempre haya suficiente liquidez
-   - Considera añadir liquidez adicional si es necesario
+2. **Monitor and maintain liquidity:**
+   - Watch the pool to ensure there's always sufficient liquidity
+   - Consider adding additional liquidity if needed
 
-3. **Promocionar tu token:**
-   - Anuncia la disponibilidad de tu token en Uniswap
-   - Proporciona tutoriales para que los usuarios puedan comprar MRN fácilmente
+3. **Promote your token:**
+   - Announce the availability of your token on Uniswap
+   - Provide tutorials for users to easily buy MRN
 
-## Próximos pasos
+## Next Steps
 
-1. **Solicitar listado en agregadores** como CoinMarketCap o CoinGecko
-2. **Implementar staking o governance** para aumentar la utilidad del token
-3. **Considerar pools de liquidez incentivados** para atraer más usuarios
+1. **Request listing on aggregators** like CoinMarketCap or CoinGecko
+2. **Implement staking or governance** to increase token utility
+3. **Consider incentivized liquidity pools** to attract more users
 
-## Consideraciones de seguridad
+## Security Considerations
 
-- Mantén tu clave privada segura
-- Considera usar una wallet hardware como Ledger o Trezor
-- Realiza auditorías antes de manejar cantidades significativas
-- Implementa cambios con precaución y pruebas exhaustivas
+- Keep your private key safe
+- Consider using a hardware wallet like Ledger or Trezor
+- Conduct audits before handling significant amounts
+- Implement changes with caution and thorough testing
 
-## Recursos adicionales
+## Additional Resources
 
-- [Documentación de Hardhat](https://hardhat.org/docs)
-- [Documentación de OpenZeppelin](https://docs.openzeppelin.com/)
-- [Guía ERC20 de Ethereum](https://ethereum.org/en/developers/docs/standards/tokens/erc-20/)
+- [Hardhat Documentation](https://hardhat.org/docs)
+- [OpenZeppelin Documentation](https://docs.openzeppelin.com/)
+- [Ethereum ERC20 Guide](https://ethereum.org/en/developers/docs/standards/tokens/erc-20/)
